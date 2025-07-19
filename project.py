@@ -108,7 +108,7 @@ def play_mp3_for_gesture(gesture):
 
             threading.Thread(target=playsound, args=(mp3_path,), daemon=True).start()
 
-st.set_page_config(page_title="Sign Language Translator", page_icon="🌷", layout="wide")
+st.set_page_config(page_title="Gesture Translator", layout="wide")
 st.markdown("""
     <style>
     body { background-color: #111 !important; color: white; }
@@ -292,7 +292,7 @@ try:
                             now = time.time()
 
                             if gesture == st.session_state.gesture_candidate:
-                                if now - st.session_state.gesture_timer > 2.5:
+                                if now - st.session_state.gesture_timer > 3.0:
                                     if should_add_gesture(gesture):
                                         st.session_state.stable_gesture = gesture
                                         st.session_state.history.append((gesture, min(int(confidence * 100), 100)))
@@ -313,10 +313,8 @@ try:
                             mpred = mmodel.predict(sequence)[0]
                             m_class = np.argmax(mpred)
                             motion_label = m_encoder.inverse_transform([m_class])[0]
-                            st.session_state.motion_data = motion_label
 
                             if motion_label != st.session_state.last_spoken_label and (now - st.session_state.last_spoken_time) > st.session_state.cooldown:
-                                play_mp3_for_gesture(motion_label)
                                 threading.Thread(target=speak, args=(motion_label,), daemon=True).start()
                                 st.session_state.last_spoken_label = motion_label
                                 st.session_state.last_spoken_time = now
@@ -327,6 +325,7 @@ try:
 
             cam_feed.image(frame, channels="BGR")
 
+            
             if st.session_state.stable_gesture == gesture:
                 percentage = min(int(confidence * 100), 100)
                 gesture_text.markdown(f"Gesture: {gesture}")
